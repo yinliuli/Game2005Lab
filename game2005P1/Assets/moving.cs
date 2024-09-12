@@ -7,9 +7,9 @@ public class moving : MonoBehaviour
 {
 
     Vector3 begin = new Vector3 (0, 0, 0);
-    public float speed = 1/2;
-    public float frequency = 1/6;
-    public float amplitude = 1/3;
+    public float speed;
+    public float frequency;
+    public float amplitude;
 
     void Start()
     {
