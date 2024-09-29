@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,39 +8,46 @@ public class moving : MonoBehaviour
     public float angle;
     bool StartMoving = false;
     public float dt = 0.02f;
-    public Vector3 AccGravity = new Vector3 ( 0, -10, 0);
+    public Vector3 AccGravity = new Vector3(0, -10, 0);
+    public Vector3 velocity;
+
+
     void Start()
     {
         transform.position = Vector3.zero;
-        StartMoving = false ;
+        StartMoving = false;
+
+
     }
 
     // Update is called once per frame
-    public void FixedUpdate()
+    void FixedUpdate()
     {
 
         float angleInRadians = angle * Mathf.Deg2Rad;
 
-        Vector3 velocity = new Vector3(Mathf.Cos(angleInRadians) * speed , Mathf.Sin(angleInRadians) * speed, 0 );
-        Debug.Log(velocity);
-
+        Vector3 velocity = new Vector3(Mathf.Cos(angleInRadians) * speed, Mathf.Sin(angleInRadians) * speed, 0);
 
         if (Input.GetKey(KeyCode.Space))
         {
             transform.position = Vector3.zero;
-            StartMoving =(true);
+            StartMoving = (true);
             Debug.Log("Start");
             AccGravity = new Vector3(0, -10, 0);
         }
 
         if (StartMoving)
         {
-            AccGravity += AccGravity * dt; 
+            Vector3 p = transform.position;
+            AccGravity += AccGravity * dt;
             transform.position = transform.position + velocity * dt + AccGravity * dt;
-            Debug.Log(velocity);
-            
+
+            Debug.DrawLine(p, transform.position, Color.red, 10);
+
         }
-        Debug.DrawLine(transform.position, transform.position + velocity, Color.red, 30);
 
     }
+
 }
+
+
