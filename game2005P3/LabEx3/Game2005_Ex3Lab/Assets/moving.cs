@@ -38,11 +38,11 @@ public class moving : MonoBehaviour
 
         if (StartMoving)
         {
-            Vector3 p = transform.position;
+            Vector3 PreviousPosition = transform.position;
             AccGravity += AccGravity * dt;
             transform.position = transform.position + velocity * dt + AccGravity * dt;
 
-            Debug.DrawLine(p, transform.position, Color.red, 10);
+            Debug.DrawLine(PreviousPosition, transform.position, Color.red, 10);
 
         }
 
