@@ -491,8 +491,9 @@ MonoBehaviour:
   speed: 20
   angle: 50
   dt: 0.02
-  AccGravity: {x: 0, y: -10, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
+  AccGravity: {x: 0, y: -1.2, z: 0}
+  initialVelocity: {x: 0, y: 0, z: 0}
+  Drag: 0
   ballPrefab: {fileID: 176337424}
 --- !u!1 &2099631529
 GameObject:

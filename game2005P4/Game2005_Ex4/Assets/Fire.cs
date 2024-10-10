@@ -46,6 +46,7 @@ public class BallMotion : MonoBehaviour
     public Vector3 velocity;
     private Vector3 gravity;
     private float dragCoefficient;
+    private bool UnderZero  = false;
     public void Initialize(Vector3 initialVelocity, Vector3 gravity, float dragCoefficient)
     {
         this.velocity = initialVelocity;
@@ -65,6 +66,12 @@ public class BallMotion : MonoBehaviour
         transform.position += velocity * deltaTime;
 
         Debug.DrawLine(PreviousPosition, transform.position, Color.red, 15);
+
+        if (!UnderZero && transform.position.y <= 0)
+        {
+            Debug.Log(transform.position.x);
+            UnderZero = true;
+        }
 
     }
 }
