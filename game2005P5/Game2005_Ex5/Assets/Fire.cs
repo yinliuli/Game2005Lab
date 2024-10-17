@@ -15,6 +15,9 @@ public class Fire : MonoBehaviour
     public List<BallMotion> balls = new List<BallMotion>();
     private int BallsCounts = 0;
 
+    public Transform plane;  
+    private Plane Plane;
+    public bool CheckingForPlane;
 
     void Start()
     {
@@ -33,8 +36,15 @@ public class Fire : MonoBehaviour
         {
             CreateBall();
         }
-        CheckForCollisions();
+        if(CheckingForPlane) 
+        {
+            CheckForPlane();
+        }
+        else
+        {
+            CheckForCollisions();
 
+        }
     }
 
     void CreateBall()
@@ -71,10 +81,30 @@ public class Fire : MonoBehaviour
         }
     }
 
+    void CheckForPlane()
+    {
+        Vector3 planeNormal = plane.up; 
+        Vector3 planePoint = plane.position;
 
+        Plane = new Plane(planeNormal, planePoint);
 
+        for (int i = 0; i < balls.Count; i++)
+        {
+            float distanceToPlane = Plane.GetDistanceToPoint(balls[i].transform.position);
+            if (distanceToPlane <= 0)
+            {
+                balls[i].SetColor(Color.red);
+                Debug.Log(balls[i].name + " is low than the plane");
 
+            }
+            else
+            {
+                balls[i].SetColor(Color.white);
 
+            }
+
+        }
+    }
 }
 
 
