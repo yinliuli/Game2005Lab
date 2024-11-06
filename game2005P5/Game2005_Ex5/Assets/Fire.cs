@@ -14,6 +14,8 @@ public class Fire : MonoBehaviour
     public float radius = 0.5f;
     public List<BallMotion> balls = new List<BallMotion>();
     private int BallsCounts = 0;
+    public Vector3 PlaceToCreateBall;
+
 
     public Transform plane;  
     public bool CheckingForPlane;
@@ -33,7 +35,7 @@ public class Fire : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            CreateBall();
+            CreateBall(PlaceToCreateBall);
         }
         if(CheckingForPlane) 
         {
@@ -42,19 +44,31 @@ public class Fire : MonoBehaviour
         else
         {
             CheckForCollisions();
-
         }
+        
     }
 
-    void CreateBall()
+    void CreateBall(Vector3 position)
     {
-        GameObject ball = Instantiate(ballPrefab, transform.position, transform.rotation);
+        GameObject ball = Instantiate(ballPrefab, position, transform.rotation);
         BallMotion motion = ball.AddComponent<BallMotion>();
 
         motion.Initialize(initialVelocity, AccGravity, Drag, radius);
         BallsCounts++;
         ball.name = "Ball" + BallsCounts;
         balls.Add(motion);
+
+    }
+    void MovingCollisionsBalls(float distance, BallMotion ball1, BallMotion ball2)
+    {
+        Vector3 Displacement = ball1.transform.position - ball2.transform.position;
+        float overlap = (ball1.radius + ball2.radius) - distance;
+        if (overlap > 0.0f)
+        {
+            Vector3 collisionNormalBToA = Displacement / distance;
+            Vector3 mtv = collisionNormalBToA * overlap;
+            ball1.transform.position += mtv;
+        }
 
     }
     void CheckForCollisions()
@@ -69,6 +83,7 @@ public class Fire : MonoBehaviour
                     balls[i].SetColor(Color.red);
                     balls[j].SetColor(Color.red);
                     Debug.Log(balls[i].name + " is collision with " + balls[j].name);
+                    MovingCollisionsBalls(distance, balls[i], balls[j]);
                 }
                 else
                 {

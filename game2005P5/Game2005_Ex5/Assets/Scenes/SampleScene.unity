@@ -488,15 +488,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5c455d079b36f54090009b74ef644c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 20
-  angle: 50
+  speed: 0
+  angle: 0
   dt: 0.02
-  AccGravity: {x: 0, y: -10, z: 0}
+  AccGravity: {x: 0, y: 0, z: 0}
   initialVelocity: {x: 0, y: 0, z: 0}
-  Drag: 0.02
+  Drag: 0
   ballPrefab: {fileID: 176337424}
   radius: 0.5
   balls: []
+  PlaceToCreateBall: {x: 1, y: 1, z: 0}
   plane: {fileID: 2099631533}
   CheckingForPlane: 0
 --- !u!1 &2099631529
