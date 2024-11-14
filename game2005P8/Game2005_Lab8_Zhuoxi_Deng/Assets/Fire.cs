@@ -17,6 +17,11 @@ public class Fire : MonoBehaviour
     private int BallsCounts = 0;
     public Vector3 PlaceToCreateBall;
     public float Mass;
+    public float Friction;
+    public bool showingtrack;
+
+
+
 
     public Transform plane;  
     public bool CheckingForPlane;
@@ -53,7 +58,7 @@ public class Fire : MonoBehaviour
         GameObject ball = Instantiate(ballPrefab, position, transform.rotation);
         BallMotion motion = ball.AddComponent<BallMotion>();
 
-        motion.Initialize(initialVelocity, AccGravity, Drag, radius);
+        motion.Initialize(initialVelocity, AccGravity, Drag, radius, showingtrack);
         BallsCounts++;
         ball.name = "Ball" + BallsCounts;
         balls.Add(motion);
@@ -122,7 +127,17 @@ public class Fire : MonoBehaviour
         TheBall.velocity = Vector3.Reflect(TheBall.velocity, planeNormal);
         Vector3 collisionForce = planeNormal * (TheBall.radius - distance);
         TheBall.transform.position += collisionForce;
+        Vector3 normalVelocity = Vector3.Project(TheBall.velocity, planeNormal); 
+        Vector3 tangentVelocity = TheBall.velocity - normalVelocity;
+        tangentVelocity *= (1 - Friction);
+        TheBall.velocity = normalVelocity + tangentVelocity;
 
+
+
+        Vector3 GetAbsOfVelocity = new Vector3(Mathf.Abs(TheBall.velocity.x), Mathf.Abs(TheBall.velocity.y), Mathf.Abs(TheBall.velocity.z) );
+        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + -tangentVelocity, Color.black);
+
+        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + GetAbsOfVelocity, Color.yellow);
     }
 }
 
@@ -133,16 +148,18 @@ public class BallMotion : MonoBehaviour
 {
     public Vector3 velocity;
     private Vector3 gravity;
-    private float dragCoefficient;
+    public float dragCoefficient;
     public float radius = 1;
     private Renderer ballRenderer;
     public Vector3 Force;
-
-    public void Initialize(Vector3 initialVelocity, Vector3 gravity, float dragCoefficient, float Radius)
+    public bool showtrack;
+    public void Initialize(Vector3 initialVelocity, Vector3 gravity, float dragCoefficient, float Radius, bool Istracking)
     {
         this.velocity = initialVelocity;
         this.gravity = gravity;
         this.dragCoefficient = dragCoefficient;
+        this.showtrack = Istracking;
+
         radius = Radius;
         transform.localScale = new Vector3(radius, radius, radius) * 2;
 
@@ -170,8 +187,13 @@ public class BallMotion : MonoBehaviour
         velocity += Force;
         Force = Vector3.zero;
 
-        Debug.DrawLine(PreviousPosition, transform.position, Color.red, 30);
 
+        Debug.DrawLine(transform.position, transform.position + gravity, Color.green);
+        if (showtrack) 
+        { 
+            Debug.DrawLine(PreviousPosition, transform.position, Color.red, 30);
+        
+        };
 
     }
     public void SetColor(Color color)
