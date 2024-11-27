@@ -2,6 +2,7 @@
 ﻿using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using static Unity.VisualScripting.Member;
 
 public class Fire : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class Fire : MonoBehaviour
     private int BallsCounts = 0;
     public Vector3 PlaceToCreateBall;
     public float Mass;
+    [Range(0f, 1f)]
     public float Friction;
     public bool showingtrack;
     private bool Firstcollision = true;
@@ -112,7 +114,7 @@ public class Fire : MonoBehaviour
             {
                 balls[i].SetColor(Color.red);
                 Debug.Log(balls[i].name + " is low than the plane");
-                MovingCollisionPlane(balls[i], planeToBall, positionAlongNormal);
+                MovingCollisionPlane(balls[i], planeToBall);
             }
             else
             {
@@ -122,45 +124,30 @@ public class Fire : MonoBehaviour
 
         }
     }
-    void MovingCollisionPlane(BallMotion TheBall, Vector3 DisPlaneToBall, float distance)
+    void MovingCollisionPlane(BallMotion TheBall, Vector3 DisPlaneToBall)
     {
-/*        Vector3 planeNormal = plane.transform.up;
-        TheBall.velocity = Vector3.Reflect(TheBall.velocity, planeNormal);
-        Vector3 collisionForce = planeNormal * (TheBall.radius - distance);
-        TheBall.transform.position += collisionForce;
-        TheBall.velocity = normalVelocity + tangentVelocity;
-
-
-
-        Vector3 GetAbsOfVelocity = new Vector3(Mathf.Abs(TheBall.velocity.x), Mathf.Abs(TheBall.velocity.y), Mathf.Abs(TheBall.velocity.z) );
-*//*        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + -tangentVelocity, Color.black);
-
-        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + GetAbsOfVelocity, Color.yellow);
-
-
-*/    
         if(Firstcollision)
         {
             SaveVelocityDate = TheBall.velocity;
-            Debug.Log(SaveVelocityDate);
+            Debug.Log("The velocity is " + SaveVelocityDate);
             Firstcollision = false;
         };
+
+        Vector3 gravityForce = AccGravity * Mass;
+        Vector3 planeNormal = plane.transform.up;
+        Vector3 normalForce = -Vector3.Project(gravityForce, planeNormal); 
+        Vector3 frictionForce = - (gravityForce + normalForce);
+
+        Debug.Log("The gravity Force is " + gravityForce);
+        Debug.Log("The normal Force is " + normalForce);
+        Debug.Log("The friction Force is " + frictionForce);
+
+        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + gravityForce, Color.red);      
+        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + normalForce, Color.green);    
+        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + frictionForce, Color.yellow);     
+
         TheBall.velocity = Vector3.zero;
         TheBall.gravity = Vector3.zero;
-        Vector3 planeNormal = plane.transform.up;
-        Vector3 normalVelocity = Vector3.Project(SaveVelocityDate, planeNormal); 
-        Vector3 tangentVelocity = SaveVelocityDate - normalVelocity;
-        tangentVelocity *= (1 - Friction);
-        Vector3 GetCollisionForce = SaveVelocityDate + tangentVelocity;
-        GetCollisionForce.y = Mathf.Abs(GetCollisionForce.y);
-
-
-        Debug.Log(tangentVelocity);
-        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + GetCollisionForce, Color.green);
-        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + AccGravity * Mass, Color.red);
-        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + -tangentVelocity, Color.yellow);
-    
-    
     }
 }
 
@@ -211,7 +198,6 @@ public class BallMotion : MonoBehaviour
         velocity += Force;
         Force = Vector3.zero;
 
-        Debug.DrawLine(transform.position, transform.position + gravity, Color.green);
 
         if (showtrack) 
         { 
