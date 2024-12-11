@@ -24,17 +24,8 @@ public class Fire : MonoBehaviour
     public bool showingtrack;
     private Vector3 SaveVelocityDate;
 
-
-    public Transform plane;  
+    public Transform plane;
     public bool CheckingForPlane;
-
-    Vector3 FirstBallPos = new Vector3(0, 0, -10);
-    Vector3 SecondBallPos = new Vector3(0, 0, -5);
-    Vector3 ThirdBallPos = new Vector3(0, 0, 0);
-    Vector3 FourthBallPos = new Vector3(0, 0, 5);
-
-
-
 
     void Start()
     {
@@ -47,48 +38,21 @@ public class Fire : MonoBehaviour
         initialVelocity.x = Mathf.Cos(angleInRadians) * speed;
         initialVelocity.y = Mathf.Sin(angleInRadians) * speed;
         initialVelocity.z = 0.0f;
-        
+
+
+
         if (Input.GetMouseButtonDown(0))
         {
             CreateBall(PlaceToCreateBall);
         }
 
-        if (Input.GetMouseButtonDown(1))
-        {
-            CreateTestBall(FirstBallPos, 0.1f, 2.0f, Color.red);
-            CreateTestBall(SecondBallPos, 0.8f, 2.0f, Color.green);
-            CreateTestBall(ThirdBallPos, 0.1f, 8.0f, Color.blue);
-            CreateTestBall(FourthBallPos, 0.8f, 8.0f, Color.yellow);
-
-        }
-
-
-
-
-        if (CheckingForPlane) 
+        if (CheckingForPlane)
         {
             CheckForPlane();
         }
-        else
-        {
-            CheckForCollisions();
-        }
-        
-    }
-
-    void CreateTestBall(Vector3 position, float TheFrictionCoefficient, float TheMass, Color thecolor)
-    {
-        GameObject ball = Instantiate(ballPrefab, position, transform.rotation);
-        BallMotion motion = ball.AddComponent<BallMotion>();
-
-        motion.Initialize(initialVelocity, AccGravity, Drag, radius, showingtrack, TheFrictionCoefficient, TheMass);
-        BallsCounts++;
-        ball.name = "Ball" + BallsCounts;
-        balls.Add(motion);
-        motion.SetColor(thecolor);
+        CheckForCollisions();
 
     }
-
 
     void CreateBall(Vector3 position)
     {
@@ -103,16 +67,30 @@ public class Fire : MonoBehaviour
 
     void MovingCollisionsBalls(float distance, BallMotion ball1, BallMotion ball2)
     {
-        Vector3 Displacement = ball1.transform.position - ball2.transform.position;
+        Vector3 collisionNormal = (ball1.transform.position - ball2.transform.position).normalized;
+
+        Vector3 relativeVelocity = ball1.velocity - ball2.velocity;
+        float velocityAlongNormal = Vector3.Dot(relativeVelocity, collisionNormal);
+
+        if (velocityAlongNormal > 0)
+            return;
+
+        Vector3 newVelocity1 = ball1.velocity - (2 * ball2.Mass / (ball1.Mass + ball2.Mass)) * velocityAlongNormal * collisionNormal;
+        Vector3 newVelocity2 = ball2.velocity + (2 * ball1.Mass / (ball1.Mass + ball2.Mass)) * velocityAlongNormal * collisionNormal;
+
+        ball1.velocity = newVelocity1;
+        ball2.velocity = newVelocity2;
+
         float overlap = (ball1.radius + ball2.radius) - distance;
-        if (overlap > 0.0f)
+        if (overlap > 0)
         {
-            Vector3 collisionNormalBToA = Displacement / distance;
-            Vector3 mtv = collisionNormalBToA * overlap;
-            ball1.transform.position += mtv;
+            Vector3 correction = collisionNormal * (overlap / 2);
+            ball1.transform.position += correction;
+            ball2.transform.position -= correction;
         }
 
     }
+
     void CheckForCollisions()
     {
         for (int i = 0; i < balls.Count; i++)
@@ -139,11 +117,12 @@ public class Fire : MonoBehaviour
 
     void CheckForPlane()
     {
-        Vector3 planeNormal = plane.transform.up; 
+        Vector3 planeNormal = plane.transform.up;
         for (int i = 0; i < balls.Count; i++)
         {
             Vector3 planeToBall = balls[i].transform.position - plane.transform.position;
             float positionAlongNormal = Vector3.Dot(planeToBall, planeNormal);
+
             if (positionAlongNormal <= balls[i].radius)
             {
                 //balls[i].SetColor(Color.red);
@@ -163,37 +142,36 @@ public class Fire : MonoBehaviour
 
         Vector3 gravityForce = AccGravity * TheBall.Mass;
         Vector3 planeNormal = plane.transform.up;
-        Vector3 normalForce = -Vector3.Project(gravityForce, planeNormal); 
 
-        Vector3 frictionForce = - (gravityForce + normalForce);
+        Vector3 normalForce = -Vector3.Project(TheBall.velocity, planeNormal);
+
+        Vector3 frictionForce = -(gravityForce + normalForce);
         frictionForce *= TheBall.BallFrictionCoefficient;
-        
+
         Vector3 ForceNet = gravityForce + normalForce + frictionForce;
+
         if (TheBall.Mass != 0)
         {
             ForceNet = ForceNet / TheBall.Mass;
-            TheBall.transform.position += ForceNet * dt;
-
+            //TheBall.transform.position += ForceNet * dt;
         }
-
-
-/*        Debug.Log("The gravity Force is " + gravityForce);
-        Debug.Log("The normal Force is " + normalForce);
-        Debug.Log("The friction Force is " + frictionForce);
-
-        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + gravityForce, Color.red);      
-        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + normalForce, Color.green);    
-        Debug.DrawLine(TheBall.transform.position, TheBall.transform.position + frictionForce, Color.yellow);     
-*/
-
-        if(TheBall.FirstCollision)
+        if (TheBall.FirstCollision)
         {
             SaveVelocityDate = TheBall.velocity;
             Debug.Log(TheBall.name + ForceNet);
             TheBall.FirstCollision = false;
         };
+
+        float penetrationDepth = TheBall.radius - Vector3.Dot(DisPlaneToBall, planeNormal);
+        if (penetrationDepth > 0)
+        {
+            TheBall.transform.position += planeNormal * penetrationDepth;
+        }
+
         TheBall.velocity = Vector3.zero;
-        TheBall.gravity = Vector3.zero;
+        TheBall.velocity = normalForce;
+        Debug.Log(normalForce);
+
     }
 }
 
@@ -263,7 +241,4 @@ public class BallMotion : MonoBehaviour
     {
         ballRenderer.material.color = color;
     }
-
-
-
 }
